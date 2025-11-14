@@ -64,7 +64,7 @@ def main(
     recursive: bool = typer.Option(
         False, "--recursive", "-r", help="Descend into directories"
     ),
-):
+) -> None:
     if not paths:
         paths = ["."]
 

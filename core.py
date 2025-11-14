@@ -4,6 +4,7 @@ import json
 import tempfile
 import subprocess
 from mutagen import File
+from typing import Any, Dict, List
 from mutagen.easyid3 import EasyID3KeyError
 from pathlib import Path
 
@@ -16,7 +17,7 @@ class EditorDoesntExistError(Exception):
     pass
 
 
-def get_files(files: list[Path]) -> list[dict]:
+def get_files(files: List[Path]) -> List[Dict[str, Any]]:
     audio_list = []
 
     for f in files:
@@ -34,7 +35,7 @@ def get_files(files: list[Path]) -> list[dict]:
     return audio_list
 
 
-def make_tmp_file(data, editor):
+def make_tmp_file(data: Dict[str, Any], editor: str) -> Dict[str, Any]:
     with tempfile.NamedTemporaryFile("w+", delete=False, suffix=".json") as tmp:
         json.dump(data, tmp, indent=2)
         path = tmp.name
@@ -49,8 +50,7 @@ def make_tmp_file(data, editor):
 
     return result
 
-
-def write_tags(files, tags, deleted_tags=[]):
+def write_tags(files: List[Dict[str, Any]], tags: Dict[str, Any], deleted_tags: List[str] = []) -> None:
     for f in files:
         audio = f["audio"]
         path = f["path"]
@@ -77,7 +77,7 @@ def write_tags(files, tags, deleted_tags=[]):
             raise AudioSaveError(msg) from e
 
 
-def list_changes(sorted_tags, edited_tags):
+def list_changes(sorted_tags: Dict[str, Any], edited_tags: Dict[str, Any]) -> List[str]:
     changes = []
     for tag in sorted_tags.keys() | edited_tags.keys():
         old_value = sorted_tags.get(tag)
@@ -91,7 +91,7 @@ def list_changes(sorted_tags, edited_tags):
     return changes
 
 
-def main(paths: list[Path], verbose: bool, editor: str):
+def main(paths: List[Path], verbose: bool, editor: str) -> str:
     files = get_files(paths)
 
     song_tags_list = []
