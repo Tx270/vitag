@@ -1,73 +1,98 @@
+#!/usr/bin/env python3
 import os
 import json
 import tempfile
 import subprocess
-from json import JSONDecodeError
 from mutagen import File
 from mutagen.easyid3 import EasyID3KeyError
+from pathlib import Path
 
 
-def getFiles(directory):
-    files = []
-    for f in os.listdir(directory):
-        if not f.endswith((".mp3", ".flac")):
-            continue
-        path = os.path.join(directory, f)
-        audio = File(path, easy=True)
+class AudioSaveError(Exception):
+    pass
+
+
+class EditorDoesntExistError(Exception):
+    pass
+
+
+def get_files(files: list[Path]) -> list[dict]:
+    audio_list = []
+
+    for f in files:
+        audio = File(f, easy=True)
+
         if audio is None:
             print(f"Skipping unsupported or unreadable file: {f}")
             continue
-        files.append({"path": path, "audio": audio})
-    return files
+
+        audio_list.append({
+            "path": f,
+            "audio": audio
+        })
+
+    return audio_list
 
 
-def makeTempFile(data):
+def make_tmp_file(data, editor):
     with tempfile.NamedTemporaryFile("w+", delete=False, suffix=".json") as tmp:
         json.dump(data, tmp, indent=2)
         path = tmp.name
 
-    subprocess.run([os.environ.get("EDITOR", "vi"), path])
-
     try:
-        with open(path) as f:
-            result = json.load(f)
-    except JSONDecodeError:
-        print("Not valid JSON")
-        exit()
+        subprocess.run([editor, path])
+    except FileNotFoundError as e:
+        raise EditorDoesntExistError(e)
+
+    with open(path) as f:
+        result = json.load(f)
 
     return result
 
 
-def writeTags(files, tags, deleted_tags=[]):
+def write_tags(files, tags, deleted_tags=[]):
     for f in files:
         audio = f["audio"]
         path = f["path"]
         backup = dict(audio)
 
-        if not deleted_tags:
-            audio.delete()
-
-        for tag, value in tags.items():
-            audio[tag] = value if isinstance(value, list) else [value]
-
-        for tag in deleted_tags:
-            audio.pop(tag, None)
-
         try:
+            if not deleted_tags:
+                audio.delete()
+
+            for tag, value in tags.items():
+                audio[tag] = value if isinstance(value, list) else [value]
+
+            for tag in deleted_tags:
+                audio.pop(tag, None)
+
             audio.save()
-        except EasyID3KeyError as e:
-            print(f"Failed to save {os.path.basename(path)} due to invalid ID3 key: {e}")
-            audio.clear()
-            audio.update(backup)
-            return
         except Exception as e:
-            print(f"Failed to save {os.path.basename(path)}: {e}")
             audio.clear()
             audio.update(backup)
+            if isinstance(e, EasyID3KeyError):
+                msg = f"[red]Invalid ID3 key in [bold]{os.path.basename(path)}[/bold][/red]:\n{e}"
+            else:
+                msg = f"[red]Failed to save [bold]{os.path.basename(path)}[/bold][/red]:\n{e}"
+            raise AudioSaveError(msg) from e
 
 
-def vitagFolder(path):
-    files = getFiles(path)
+def list_changes(sorted_tags, edited_tags):
+    changes = []
+    for tag in sorted_tags.keys() | edited_tags.keys():
+        old_value = sorted_tags.get(tag)
+        new_value = edited_tags.get(tag)
+        if old_value is None and new_value is not None:
+            changes.append(f"Added tag '{tag}': {new_value}")
+        elif new_value is None:
+            changes.append(f"Removed tag '{tag}'")
+        elif old_value != new_value:
+            changes.append(f"Changed tag '{tag}': '{old_value}' => '{new_value}'")
+    return changes
+
+
+def main(paths: list[Path], verbose: bool, editor: str):
+    files = get_files(paths)
 
     song_tags_list = []
     for f in files:
@@ -93,7 +118,7 @@ def vitagFolder(path):
             unique_tags[tag] = "*"
 
     sorted_tags = dict(sorted(unique_tags.items()))
-    edited_tags = makeTempFile(sorted_tags)
+    edited_tags = make_tmp_file(sorted_tags, editor)
 
     deleted_tags = []
     for tag in unique_tags:
@@ -105,26 +130,15 @@ def vitagFolder(path):
         if value != "*":
             final_tags[tag] = value
 
-    writeTags(files, final_tags, deleted_tags)
+    changes = list_changes(sorted_tags, edited_tags)
 
-def vitagFile(path):
-    audio = File(path, easy=True)
-    if audio is None:
-        print("Unsupported or unreadable file")
-        return
+    if not changes:
+        return "[yellow]No tags updated[/yellow]"
 
-    tags = {}
-    for t, v in audio.items():
-        if len(v) == 1:
-            tags[t] = v[0]
-        else:
-            tags[t] = v
+    if verbose:
+        for change in changes:
+            print(change)
 
-    edited = makeTempFile(tags)
+    write_tags(files, final_tags, deleted_tags)
 
-    final_tags = {}
-    for t, v in edited.items():
-        if v != "*":
-            final_tags[t] = v
-
-    writeTags([{"path": path, "audio": audio}], final_tags)
+    return "[green]Audio tags updated successfully[/green]"
