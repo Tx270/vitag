@@ -4,9 +4,9 @@ import os
 from pathlib import Path
 import typer
 from rich import print
-from core import main as process
-from core import AudioSaveError, EditorDoesntExistError
 from json import JSONDecodeError
+from .core import main as process
+from .core import AudioSaveError, EditorDoesntExistError
 
 app = typer.Typer(add_completion=False)
 
