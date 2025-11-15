@@ -61,6 +61,20 @@ vitag "01 Song.mp3" "Album 2/" --editor nano
 vitag "Album 1/" -r
 ```
 
+## Roadmap
+
+- Extensions:
+    - [ ]  Add `--extension` option to filter file types
+    - [ ]  Test with more audio formats
+    - [ ]  Add supported audio formats to the README file
+- UI/UX:
+    - [ ]  Add progress bars for loading and saving tags
+- Distribution:
+    - [ ]  Upload package to PyPI
+- Features:
+    - [ ]  Add cover art support
+
+
 ## License
 
 See [LICENSE](https://github.com/Tx270/vitag/blob/main/LICENSE)
