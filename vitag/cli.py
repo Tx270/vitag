@@ -2,6 +2,7 @@
 import sys
 import os
 from pathlib import Path
+import platform
 import typer
 from rich import print
 from json import JSONDecodeError
@@ -9,6 +10,17 @@ from .core import main as process
 from .core import AudioSaveError, EditorDoesntExistError
 
 app = typer.Typer(add_completion=False)
+
+
+def detect_editor() -> str:
+    env_editor = os.environ.get("VISUAL") or os.environ.get("EDITOR")
+    if env_editor:
+        return env_editor
+
+    if platform.system() == "Windows":
+        return "notepad"
+    else:
+        return "vi"
 
 
 def read_stdin() -> list[Path]:
@@ -59,7 +71,7 @@ def main(
         False, "--verbose", "-v", help="Enable verbose output"
     ),
     editor: str = typer.Option(
-        os.environ.get("EDITOR", "vi"), "--editor", "-e", help="Choose a custom editor"
+        detect_editor, "--editor", "-e", help="Choose a custom editor"
     ),
     recursive: bool = typer.Option(
         False, "--recursive", "-r", help="Descend into directories"
