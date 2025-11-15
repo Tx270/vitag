@@ -18,8 +18,6 @@ A minimal CLI tool inspired by [vidir](https://github.com/trapd00r/vidir), enabl
 
 ## Instalation
 
-![status](https://img.shields.io/badge/status-WIP-yellow)
-
 Install through [pip](https://pip.pypa.io/en/stable/):
 
 ```bash
