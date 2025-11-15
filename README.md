@@ -6,9 +6,9 @@ A minimal CLI tool inspired by [vidir](https://github.com/trapd00r/vidir), enabl
 ## Features
 
 - Collects audio files from given paths
-- Extracts tags using `mutagen` and writes them into a temp file
-- Lets you edit tags in your preferred editor
-- Validates changes, detects conflicts, and applies updates automatically
+- Extracts tags using `mutagen` and writes them into a temp file in a structured `json` format
+- Lets you edit the json in your preferred text editor
+- Validates changes, detects conflicts, and translates the json updates to audio file tags
 
 ## Requirements
 
@@ -60,6 +60,29 @@ vitag "01 Song.mp3" "Album 2/" --editor nano
 # Recursive scan (for example useful for albums with many disks)
 vitag "Album 1/" -r
 ```
+The star (*) symbol means that the tag is not the same between all given files
+```json
+{
+  "artist": "Boards of Canada",
+  "album": "*",
+  "genre": "*",
+  "label": "Sonic Records",
+  "year": 2005
+}
+```
+You can edit, add and remove tags by editing the json
+```json
+{
+  "artist": "Boards of Canada",
+  "album": "*",
+  "genre": "pop",
+  "year": 2020
+}
+```
+In the example above, in all selected files:
+ - `artist` and `album` tags will stay the same
+ - `genre` tag will be changed to *pop* regardless of the previous value
+ - `year` tag will be changed to *2020*.
 
 ## Roadmap
 
