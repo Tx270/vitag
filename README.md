@@ -61,24 +61,23 @@ vitag "Album 1/" -r
 The star (*) symbol means that the tag is not the same between all given files
 ```json
 {
-  "artist": "Boards of Canada",
+  "artist": "King Gizzard",
   "album": "*",
   "genre": "*",
-  "label": "Sonic Records",
-  "year": 2005
+  "year": 2018
 }
 ```
 You can edit, add and remove tags by editing the json
 ```json
 {
-  "artist": "Boards of Canada",
+  "artist": "King Gizzard",
   "album": "*",
   "genre": "pop",
   "year": 2020
 }
 ```
 In the example above, in all selected files:
- - `artist` and `album` tags will stay the same
+ - `artist` and `album` tags will stay the same for each file
  - `genre` tag will be changed to *pop* regardless of the previous value
  - `year` tag will be changed to *2020*.
 
@@ -89,9 +88,10 @@ In the example above, in all selected files:
     - [ ]  Test with more audio formats
     - [ ]  Add supported audio formats to the README file
 - UI/UX:
-    - [ ]  Add progress bars for loading and saving tags
+    - [X]  Add progress bars for loading and saving tags
+    - [ ]  Add better error messages
 - Distribution:
-    - [ ]  Upload package to PyPI
+    - [X]  Upload package to PyPI
 - Features:
     - [ ]  Add cover art support
 

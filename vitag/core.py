@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import sys
 import json
 import tempfile
 import subprocess
@@ -50,10 +51,12 @@ def make_tmp_file(data: Dict[str, Any], editor: str) -> Dict[str, Any]:
 
     return result
 
+
 def write_tags(files: List[Dict[str, Any]], tags: Dict[str, Any], deleted_tags: List[str] = []) -> None:
-    for f in files:
-        audio = f["audio"]
-        path = f["path"]
+    total = len(files) - 1
+    for index, file in enumerate(files):
+        audio = file["audio"]
+        path = file["path"]
         backup = dict(audio)
 
         try:
@@ -67,14 +70,23 @@ def write_tags(files: List[Dict[str, Any]], tags: Dict[str, Any], deleted_tags: 
                 audio.pop(tag, None)
 
             audio.save()
+
+            sys.stdout.write(f"\r[{index}/{total}]")
+            sys.stdout.flush()
         except Exception as e:
+            sys.stdout.write("\r" + " " * 50 + "\r")
+            sys.stdout.flush()
+
             audio.clear()
             audio.update(backup)
+
             if isinstance(e, EasyID3KeyError):
                 msg = f"[red]Invalid ID3 key in [bold]{os.path.basename(path)}[/bold][/red]:\n{e}"
             else:
                 msg = f"[red]Failed to save [bold]{os.path.basename(path)}[/bold][/red]:\n{e}"
             raise AudioSaveError(msg) from e
+    sys.stdout.write("\r" + " " * 50 + "\r")
+    sys.stdout.flush()
 
 
 def list_changes(sorted_tags: Dict[str, Any], edited_tags: Dict[str, Any]) -> List[str]:
