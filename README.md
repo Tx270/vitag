@@ -9,6 +9,9 @@ A minimal CLI tool inspired by [vidir](https://github.com/trapd00r/vidir), enabl
 - Extracts tags using `mutagen` and writes them into a temp file in a structured `json` format
 - Lets you edit the json in your preferred text editor
 - Validates changes, detects conflicts, and translates the json updates to audio file tags
+- **Supported formats**:
+    - MP3
+    - FLAC
 
 ## Requirements
 
@@ -86,7 +89,7 @@ In the example above, in all selected files:
 - Extensions:
     - [ ]  Add `--extension` option to filter file types
     - [ ]  Test with more audio formats
-    - [ ]  Add supported audio formats to the README file
+    - [X]  Add supported audio formats to the README file
 - UI/UX:
     - [X]  Add progress bars for loading and saving tags
     - [ ]  Add better error messages
