@@ -44,22 +44,26 @@ For more info check `--help`
 
 ```bash
 vitag [PATH ...] \
-    [--recursive] \
-    [--editor <cmd>] \
-    [--verbose]
+    [--recursive -r] \
+    [--editor -e TEXT] \
+    [--verbose -v] \
+    [--extensions -x TEXT]
 ```
 
 ## Examples
 
 ```bash
 # Edit all audio files in a folder
-vitag "Album 1"
+vitag "Omnium Gatherum/"
+
+# Edit all audio files in current directory that have mp3 or wav extensions
+vitag --extensions mp3,wav
 
 # Edit multiple paths at once with custom editor
-vitag "01 Song.mp3" "Album 2/" --editor nano
+vitag "01 Robot Stop.mp3" "Fishing for Fishies/" -e nano
 
 # Recursive scan (for example useful for albums with many disks)
-vitag "Album 1/" -r
+vitag "Petrodragonic Apocalypse/" -r
 ```
 The star (*) symbol means that the tag is not the same between all given files
 ```json
@@ -87,7 +91,7 @@ In the example above, in all selected files:
 ## Roadmap
 
 - Extensions:
-    - [ ]  Add `--extension` option to filter file types
+    - [X]  Add `--extension` option to filter file types
     - [ ]  Test with more audio formats
     - [X]  Add supported audio formats to the README file
 - UI/UX:

@@ -10,6 +10,7 @@ from .core import main as process
 from .core import AudioSaveError, EditorDoesntExistError
 
 app = typer.Typer(add_completion=False)
+SUPPORTED_EXT = (".mp3", ".flac")
 
 
 def detect_editor() -> str:
@@ -28,9 +29,8 @@ def read_stdin() -> list[Path]:
     return [Path(line) for line in data if line]
 
 
-def expand_paths(paths: list[str], recursive: bool = False) -> list[Path]:
+def expand_paths(paths: list[str], allowed: list[str], recursive: bool = False) -> list[Path]:
     result = []
-    allowed = (".mp3", ".flac")
 
     def is_allowed(path: Path) -> bool:
         return path.suffix.lower() in allowed
@@ -76,12 +76,22 @@ def main(
     recursive: bool = typer.Option(
         False, "--recursive", "-r", help="Descend into directories"
     ),
+    extensions: str = typer.Option(
+        ','.join(ext.lstrip('.') for ext in SUPPORTED_EXT),
+        "--extensions", "-x",
+        help="Filter files by extension, only supported file types allowed"
+    ),
 ) -> None:
     if not paths:
         paths = ["."]
 
+    ext = ["." + x.lstrip(".").strip().lower() for x in extensions.split(",") if x.strip()]
+    if set(ext) - set(SUPPORTED_EXT):
+        print("[red bold]Some file extensions you passed are not supported[/red bold]")
+        raise typer.Exit(code=1)
+
     try:
-        files = expand_paths(paths, recursive)
+        files = expand_paths(paths, ext, recursive)
     except FileNotFoundError as e:
         print(str(e))
         raise typer.Exit(code=1)
