@@ -20,7 +20,7 @@ def detect_editor() -> str:
 
     if platform.system() == "Windows":
         return "notepad"
-    elif system == "Darwin":
+    elif platform.system() == "Darwin":
         return "open -e
     else:
         return "vi"
